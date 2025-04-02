@@ -3,7 +3,6 @@
     Groupe: 401
     Description: Un jeu de roche, papier, ciseaux
 """
-import arcade
 from game_state import GameState
 from attack_animation import *
 import random
@@ -50,7 +49,12 @@ class RPCGAME(arcade.Window):
         self.state = GameState.NOT_STARTED
         self.player_attack = 3
         self.ai_attack = None
+        self.point_color = [arcade.color.LIBERTY, arcade.color.BLUE_VIOLET,
+                       arcade.color.RAZZLE_DAZZLE_ROSE,
+                       arcade.color.GOLD]
         self.subtitle = "Appuyez sur ESPACE pour commencer"
+        self.round_subtitle = ""
+        self.round_color = arcade.color.LICORICE
         self.attack_list = {
             0: "rock",
             1: "paper",
@@ -59,7 +63,6 @@ class RPCGAME(arcade.Window):
         }
     def on_draw(self):
         self.clear()
-        point_color = [arcade.color.LIBERTY, arcade.color.RAZZLE_DAZZLE_ROSE, arcade.color.RED_DEVIL, arcade.color.LEMON_YELLOW]
         game_title = arcade.Text("Roche - Papier - Ciseau",
                                  SCREEN_WIDTH/2, SCREEN_HEIGHT - 100,
                                  arcade.color.ROYAL_YELLOW, 50, bold= True,
@@ -69,31 +72,35 @@ class RPCGAME(arcade.Window):
                                     arcade.color.LIGHT_BLUE, 25,
                                     bold= True, anchor_x= "center")
         player_text = arcade.Text(f"Vous avez {self.player_point} points",
-                                  SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/10, point_color[self.player_point],
+                                  SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/10, self.point_color[self.player_point],
                                   20, bold= True, anchor_x= "center")
         ai_text = arcade.Text(f"L'ia a {self.ai_point} points",
                               SCREEN_WIDTH/2 + 250, SCREEN_HEIGHT/10,
-                              point_color[self.ai_point], 20,
+                              self.point_color[self.ai_point], 20,
                               bold= True, anchor_x= "center")
-        self.victory_text = arcade.Text("VICTOIRE",
+        round_winner_text = arcade.Text(self.round_subtitle,
+                                    SCREEN_WIDTH/2, SCREEN_HEIGHT - 200,
+                                    self.round_color, 25,
+                                    bold= True, anchor_x= "center")
+        victory_text = arcade.Text("VICTOIRE",
                                         SCREEN_WIDTH/2, SCREEN_HEIGHT - 200,
                                         arcade.color.GOLD, 50,
                                         bold= True, anchor_x= "center")
-        self.loose_text = arcade.Text("DÉFAITE",
+        loose_text = arcade.Text("DÉFAITE",
                                       SCREEN_WIDTH / 2, SCREEN_HEIGHT - 200,
                                       arcade.color.RED_DEVIL, 50,
                                       bold=True, anchor_x="center")
-        self.retry_text = arcade.Text("Appuyer sur ESPACE pour recommencer",
+        retry_text = arcade.Text("Appuyer sur ESPACE pour recommencer",
                                       SCREEN_WIDTH / 2, SCREEN_HEIGHT - 250,
                                       arcade.color.LIGHT_BLUE, 20,
                                       bold=True, anchor_x="center")
         game_title.draw()
         if self.state == GameState.GAME_OVER:
             if self.player_point == 3:
-                self.victory_text.draw()
+                victory_text.draw()
             else:
-                self.loose_text.draw()
-            self.retry_text.draw()
+                loose_text.draw()
+            retry_text.draw()
             self.rock.animating = False
             self.paper.animating = False
             self.cissors.animating = False
@@ -108,9 +115,9 @@ class RPCGAME(arcade.Window):
             self.ai_paper.animating = True
             self.ai_cissors.animating = True
             game_subtitle.draw()
+            round_winner_text.draw()
         player_text.draw()
         ai_text.draw()
-
         for i in range(0,3):
             arcade.draw_circle_outline(SCREEN_WIDTH/2 - 150 - i*100,
                                        SCREEN_HEIGHT/2 - 85, 60,
@@ -132,6 +139,7 @@ class RPCGAME(arcade.Window):
             self.ai_point = 0
         elif self.state == GameState.ROUND_DONE and arcade.key.SPACE:
             self.subtitle = "Appuyer sur une image pour faire une attaque!"
+            self.round_subtitle = ""
             self.state = GameState.ROUND_ACTIVE
             self.player_attack = 3
 
@@ -161,18 +169,31 @@ class RPCGAME(arcade.Window):
             match self.both_attack:
                 case ["rock", "cissors"]:
                     self.player_point += 1
+                    self.round_subtitle = "Vous avez gagné la manche"
+                    self.round_color = self.point_color[self.player_point]
                 case ["paper", "rock"]:
                     self.player_point += 1
+                    self.round_subtitle = "Vous avez gagné la manche"
+                    self.round_color = self.point_color[self.player_point]
                 case ["cissors", "paper"]:
                     self.player_point += 1
+                    self.round_subtitle = "Vous avez gagné la manche"
+                    self.round_color = self.point_color[self.player_point]
                 case ["cissors", "rock"]:
                     self.ai_point += 1
+                    self.round_subtitle = "L'ia a gagné la manche"
+                    self.round_color = self.point_color[self.ai_point]
                 case ["rock", "paper"]:
                     self.ai_point += 1
+                    self.round_subtitle = "L'ia a gagné la manche"
+                    self.round_color = self.point_color[self.ai_point]
                 case ["paper", "cissors"]:
                     self.ai_point += 1
+                    self.round_subtitle = "L'ia a gagné la manche"
+                    self.round_color = self.point_color[self.ai_point]
                 case _:
-                    pass
+                    self.round_subtitle = "Égalité"
+                    self.round_color = arcade.color.WHITE
             if self.ai_rock in self.rock_list:
                 self.rock_list.remove(self.ai_rock)
             elif self.ai_paper in self.paper_list:
