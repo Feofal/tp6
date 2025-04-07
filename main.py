@@ -2,6 +2,7 @@
     Nom: Gabriel Foriel Fusier
     Groupe: 401
     Description: Un jeu de roche, papier, ciseaux
+    
 """
 from game_state import GameState
 from attack_animation import *
@@ -49,6 +50,7 @@ class RPCGAME(arcade.Window):
         self.state = GameState.NOT_STARTED
         self.player_attack = 3
         self.ai_attack = None
+        self.both_attack = None
         self.point_color = [arcade.color.LIBERTY, arcade.color.BLUE_VIOLET,
                        arcade.color.RAZZLE_DAZZLE_ROSE,
                        arcade.color.GOLD]
@@ -94,7 +96,15 @@ class RPCGAME(arcade.Window):
                                       SCREEN_WIDTH / 2, SCREEN_HEIGHT - 250,
                                       arcade.color.LIGHT_BLUE, 20,
                                       bold=True, anchor_x="center")
-        game_title.draw()
+        for i in range(0,3):
+            arcade.draw_circle_outline(SCREEN_WIDTH/2 - 150 - i*100,
+                                       SCREEN_HEIGHT/2 - 85, 60,
+                                       arcade.color.ROYAL_AZURE,
+                                       tilt_angle= 45, num_segments= 4)
+        arcade.draw_circle_outline(SCREEN_WIDTH / 2 + 250, SCREEN_HEIGHT / 2 - 85,
+                                   55, arcade.color.ROYAL_AZURE,
+                                   tilt_angle=45, num_segments=4)
+
         if self.state == GameState.GAME_OVER:
             if self.player_point == 3:
                 victory_text.draw()
@@ -118,14 +128,7 @@ class RPCGAME(arcade.Window):
             round_winner_text.draw()
         player_text.draw()
         ai_text.draw()
-        for i in range(0,3):
-            arcade.draw_circle_outline(SCREEN_WIDTH/2 - 150 - i*100,
-                                       SCREEN_HEIGHT/2 - 85, 60,
-                                       arcade.color.ROYAL_AZURE,
-                                       tilt_angle= 45, num_segments= 4)
-        arcade.draw_circle_outline(SCREEN_WIDTH / 2 + 250, SCREEN_HEIGHT / 2 - 85,
-                                   55, arcade.color.ROYAL_AZURE,
-                                   tilt_angle=45, num_segments=4)
+        game_title.draw()
         self.players_list.draw()
         self.rock_list.draw()
         self.paper_list.draw()
@@ -137,11 +140,18 @@ class RPCGAME(arcade.Window):
             self.state = GameState.ROUND_ACTIVE
             self.player_point = 0
             self.ai_point = 0
+            self.player_attack = 3
         elif self.state == GameState.ROUND_DONE and arcade.key.SPACE:
             self.subtitle = "Appuyer sur une image pour faire une attaque!"
             self.round_subtitle = ""
             self.state = GameState.ROUND_ACTIVE
             self.player_attack = 3
+        if self.ai_rock in self.rock_list:
+            self.rock_list.remove(self.ai_rock)
+        elif self.ai_paper in self.paper_list:
+            self.paper_list.remove(self.ai_paper)
+        elif self.ai_cissors in self.cissors_list:
+            self.cissors_list.remove(self.ai_cissors)
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         if (self.rock.collides_with_point((x,y))
@@ -170,36 +180,30 @@ class RPCGAME(arcade.Window):
                 case ["rock", "cissors"]:
                     self.player_point += 1
                     self.round_subtitle = "Vous avez gagné la manche"
-                    self.round_color = self.point_color[self.player_point]
+                    self.round_color = arcade.color.CHARTREUSE
                 case ["paper", "rock"]:
                     self.player_point += 1
                     self.round_subtitle = "Vous avez gagné la manche"
-                    self.round_color = self.point_color[self.player_point]
+                    self.round_color = arcade.color.CHARTREUSE
                 case ["cissors", "paper"]:
                     self.player_point += 1
                     self.round_subtitle = "Vous avez gagné la manche"
-                    self.round_color = self.point_color[self.player_point]
+                    self.round_color = arcade.color.CHARTREUSE
                 case ["cissors", "rock"]:
                     self.ai_point += 1
                     self.round_subtitle = "L'ia a gagné la manche"
-                    self.round_color = self.point_color[self.ai_point]
+                    self.round_color = arcade.color.ELECTRIC_CRIMSON
                 case ["rock", "paper"]:
                     self.ai_point += 1
                     self.round_subtitle = "L'ia a gagné la manche"
-                    self.round_color = self.point_color[self.ai_point]
+                    self.round_color = arcade.color.ELECTRIC_CRIMSON
                 case ["paper", "cissors"]:
                     self.ai_point += 1
                     self.round_subtitle = "L'ia a gagné la manche"
-                    self.round_color = self.point_color[self.ai_point]
+                    self.round_color = arcade.color.ELECTRIC_CRIMSON
                 case _:
                     self.round_subtitle = "Égalité"
                     self.round_color = arcade.color.WHITE
-            if self.ai_rock in self.rock_list:
-                self.rock_list.remove(self.ai_rock)
-            elif self.ai_paper in self.paper_list:
-                self.paper_list.remove(self.ai_paper)
-            elif self.ai_cissors in self.cissors_list:
-                self.cissors_list.remove(self.ai_cissors)
 
             match self.attack_list[self.ai_attack]:
                 case "rock":
