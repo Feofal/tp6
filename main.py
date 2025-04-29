@@ -145,17 +145,20 @@ class RPC(arcade.Window):
             self.paper_list.remove(self.ai_paper)
         elif self.ai_cissors in self.cissors_list:
             self.cissors_list.remove(self.ai_cissors)
+        if self.rock not in self.rock_list:
+            self.rock_list.append(self.rock)
+        if self.paper not in self.paper_list:
+            self.paper_list.append(self.paper)
+        if self.cissors not in self.cissors_list:
+            self.cissors_list.append(self.cissors)
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        if (self.rock.collides_with_point((x, y))
-            or self.paper.collides_with_point((x, y))
-                or self.cissors.collides_with_point((x, y))):
-            if self.rock.collides_with_point((x, y)):
-                self.player_attack = 0
-            elif self.paper.collides_with_point((x, y)):
-                self.player_attack = 1
-            elif self.cissors.collides_with_point((x, y)):
-                self.player_attack = 2
+        if self.rock.collides_with_point((x, y)):
+            self.player_attack = 0
+        elif self.paper.collides_with_point((x, y)):
+            self.player_attack = 1
+        elif self.cissors.collides_with_point((x, y)):
+            self.player_attack = 2
 
     def on_update(self, delta_time: float):
         if not self.state == GameState.GAME_OVER:
@@ -198,7 +201,6 @@ class RPC(arcade.Window):
                 case _:
                     self.round_subtitle = "Égalité"
                     self.round_color = arcade.color.WHITE
-
             match self.attack_list[self.ai_attack]:
                 case "rock":
                     self.rock_list.append(self.ai_rock)
@@ -206,6 +208,16 @@ class RPC(arcade.Window):
                     self.paper_list.append(self.ai_paper)
                 case "cissors":
                     self.cissors_list.append(self.ai_cissors)
+            match self.attack_list[self.player_attack]:
+                case "rock":
+                    self.paper_list.remove(self.paper)
+                    self.cissors_list.remove(self.cissors)
+                case "paper":
+                    self.rock_list.remove(self.rock)
+                    self.cissors_list.remove(self.cissors)
+                case "cissors":
+                    self.rock_list.remove(self.rock)
+                    self.paper_list.remove(self.paper)
             self.subtitle = "Appuyez sur ESPACE pour continuer"
             self.state = GameState.ROUND_DONE
 
@@ -217,3 +229,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
